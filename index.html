@@ -6,24 +6,19 @@
     <title>تلویزیون آنلاین من</title>
     <style>
         body { background: #000; color: #fff; margin: 0; font-family: Tahoma, sans-serif; overflow: hidden; text-align: center; }
-        
-        /* پرده ورودی برای اجازه پخش */
         #start-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 100;
         }
-
         .play-btn {
             padding: 20px 50px; background: #e50914; color: #fff;
             border: none; border-radius: 50px; font-size: 24px;
             font-weight: bold; cursor: pointer; transition: 0.3s;
         }
         .play-btn:hover { background: #ff0a16; transform: scale(1.1); }
-
         #player-container { width: 100vw; height: 100vh; }
         video { width: 100%; height: 100%; background: #000; }
-        
         #info { position: absolute; bottom: 20px; width: 100%; text-shadow: 2px 2px 4px #000; color: #ccc; font-size: 14px; }
     </style>
 </head>
@@ -39,22 +34,18 @@
         <video id="tvPlayer" playsinline></video>
     </div>
 
-    <div id="info" id="statusText">در حال محاسبه زمان پخش...</div>
+    <div id="info">در حال محاسبه زمان پخش...</div>
 
     <script>
-        // ۱. لیست فیلم‌های شما
         const playlist = [
             { 
                 url: 'https://www.w3schools.com/html/mov_bbb.mp4', 
-                duration: 596, 
-                title: 'فیلم تستی گوگل' 
+                duration: 10, 
+                title: 'فیلم تستی' 
             }
-            // اینجا می‌توانید فیلم‌های خودتان (مثل لینک فیلمجو) را اضافه کنید
         ];
 
-        // ۲. زمان مبدا (ثابت بماند)
         const epochStart = new Date('2024-01-01T00:00:00').getTime() / 1000;
-
         const player = document.getElementById('tvPlayer');
         const startScreen = document.getElementById('start-screen');
         const info = document.getElementById('info');
@@ -71,11 +62,11 @@
                     
                     if (player.src !== movie.url) {
                         player.src = movie.url;
-                        player.load(); // بارگذاری فیلم جدید
                     }
                     
                     player.currentTime = seekTime;
-                    info.innerText = در حال پخش: ${movie.title};
+                    // اصلاح شده در خط پایین:
+                    info.innerText = "در حال پخش: " + movie.title;
                     break;
                 }
                 accumulated += movie.duration;
@@ -83,13 +74,13 @@
         }
 
         function startBroadcast() {
-            startScreen.style.display = 'none'; // حذف صفحه شروع
-            syncTV(); // هماهنگ‌سازی زمان
+            startScreen.style.display = 'none';
+            syncTV();
             player.play().catch(error => {
-                alert("خطا در پخش: " + error.message);
+                console.error("خطا در پخش:", error);
+                alert("مرورگر اجازه پخش خودکار نداد. دوباره کلیک کنید.");
             });
 
-            // هر ۱۰ ثانیه یکبار هماهنگی را چک کن
             setInterval(syncTV, 10000);
         }
     </script>
