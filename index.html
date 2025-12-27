@@ -1,49 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>عیب‌یابی تلویزیون</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تلویزیون آنلاین من</title>
     <style>
-        body { background: #111; color: #fff; text-align: center; font-family: sans-serif; padding: 20px; }
-        #status { border: 1px solid #444; padding: 20px; margin: 20px; background: #222; }
-        .error { color: #ff4d4d; font-weight: bold; }
-        .success { color: #00ff00; }
+        body { background: #000; color: #fff; margin: 0; font-family: Tahoma, sans-serif; overflow: hidden; text-align: center; }
+        
+        /* پرده ورودی برای اجازه پخش */
+        #start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100;
+        }
+
+        .play-btn {
+            padding: 20px 50px; background: #e50914; color: #fff;
+            border: none; border-radius: 50px; font-size: 24px;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .play-btn:hover { background: #ff0a16; transform: scale(1.1); }
+
+        #player-container { width: 100vw; height: 100vh; }
+        video { width: 100%; height: 100%; background: #000; }
+        
+        #info { position: absolute; bottom: 20px; width: 100%; text-shadow: 2px 2px 4px #000; color: #ccc; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <h2>وضعیت اتصال به سرور ویدیو</h2>
-    
-    <div id="status">
-        <p id="msg">در حال تست اتصال...</p>
-        <button onclick="checkVideo()" style="padding: 10px;">تست مجدد دستی</button>
+    <div id="start-screen">
+        <h1 style="margin-bottom: 30px;">به شبکه تلویزیونی من خوش آمدید</h1>
+        <button class="play-btn" onclick="startBroadcast()">🔴 ورود به پخش زنده</button>
+        <p style="color: #888; margin-top: 20px;">(برای هماهنگی صدا و تصویر کلیک کنید)</p>
     </div>
 
-    <video id="testVideo" width="300" style="display:none;"></video>
+    <div id="player-container">
+        <video id="tvPlayer" playsinline></video>
+    </div>
+
+    <div id="info" id="statusText">در حال محاسبه زمان پخش...</div>
 
     <script>
-        function checkVideo() {
-            const video = document.getElementById('testVideo');
-            const msg = document.getElementById('msg');
-            const videoUrl = "https://caspian13.cdn.asset.aparat.com/aparat-video/a3c5d4bee6719d61268a29285cd6829059117243-360p.mp4?wmsAuthSign=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6ImY4YTFkZTcwNDlmNjY1YmM0NmE3Nzc5ZTVlNjk0MjYzIiwiZXhwIjoxNzY2ODgzMjQxLCJpc3MiOiJTYWJhIElkZWEgR1NJRyJ9.EDHUh8uJveyspCXAYIQyNqewA7WJgfXuzehu404E9EE"; // لینک تست گوگل
-            
-            msg.innerHTML = "در حال ارسال درخواست به سرور ویدیو...";
-            
-            video.src = videoUrl;
-            
-            video.oncanplaythrough = function() {
-                msg.innerHTML = "<span class='success'>✅ ارتباط برقرار شد! ویدیو سالم است.</span><br>اگر فیلم نمیبینید، مشکل از تنظیمات Autoplay مرورگر است.";
-            };
+        // ۱. لیست فیلم‌های شما
+        const playlist = [
+            { 
+                url: 'https://caspian13.cdn.asset.aparat.com/aparat-video/a3c5d4bee6719d61268a29285cd6829059117243-360p.mp4?wmsAuthSign=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6ImRjN2NjNDE0MzM3YWI0N2Q0ZjMwNWVkNzhmZmI1NTM0IiwiZXhwIjoxNzY2ODgzNDIzLCJpc3MiOiJTYWJhIElkZWEgR1NJRyJ9.WBa5Uwdop2e80-Z8hA1Vtzvp-OQv9cDIiMfNjCY11ns', 
+                duration: 596, 
+                title: 'فیلم تستی گوگل' 
+            }
+            // اینجا می‌توانید فیلم‌های خودتان (مثل لینک فیلمجو) را اضافه کنید
+        ];
 
-            video.onerror = function() {
-                msg.innerHTML = "<span class='error'>❌ خطا در بارگذاری!</span><br>";
-                msg.innerHTML += "کد خطا: " + video.error.code + "<br>";
-                msg.innerHTML += "احتمالاً مرورگر شما اجازه دسترسی به این لینک را نمی‌دهد.";
-            };
+        // ۲. زمان مبدا (ثابت بماند)
+        const epochStart = new Date('2024-01-01T00:00:00').getTime() / 1000;
+
+        const player = document.getElementById('tvPlayer');
+        const startScreen = document.getElementById('start-screen');
+        const info = document.getElementById('info');
+
+        function syncTV() {
+            const now = Date.now() / 1000;
+            const totalDuration = playlist.reduce((a, b) => a + b.duration, 0);
+            let elapsed = (now - epochStart) % totalDuration;
+
+            let accumulated = 0;
+            for (let movie of playlist) {
+                if (elapsed < accumulated + movie.duration) {
+                    const seekTime = elapsed - accumulated;
+                    
+                    if (player.src !== movie.url) {
+                        player.src = movie.url;
+                        player.load(); // بارگذاری فیلم جدید
+                    }
+                    
+                    player.currentTime = seekTime;
+                    info.innerText = در حال پخش: ${movie.title};
+                    break;
+                }
+                accumulated += movie.duration;
+            }
         }
-        
-        // اجرای خودکار بعد از ۲ ثانیه
-        setTimeout(checkVideo, 2000);
+
+        function startBroadcast() {
+            startScreen.style.display = 'none'; // حذف صفحه شروع
+            syncTV(); // هماهنگ‌سازی زمان
+            player.play().catch(error => {
+                alert("خطا در پخش: " + error.message);
+            });
+
+            // هر ۱۰ ثانیه یکبار هماهنگی را چک کن
+            setInterval(syncTV, 10000);
+        }
     </script>
 </body>
 </html>
