@@ -1,40 +1,49 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>تست پخش زنده</title>
+    <title>عیب‌یابی تلویزیون</title>
     <style>
-        body { background: #000; color: #fff; text-align: center; padding-top: 50px; }
-        video { width: 90%; max-width: 800px; border: 2px solid #333; }
-        #log { color: yellow; margin-top: 20px; font-size: 14px; }
+        body { background: #111; color: #fff; text-align: center; font-family: sans-serif; padding: 20px; }
+        #status { border: 1px solid #444; padding: 20px; margin: 20px; background: #222; }
+        .error { color: #ff4d4d; font-weight: bold; }
+        .success { color: #00ff00; }
     </style>
 </head>
 <body>
 
-    <h2>اگر ویدیو پخش نمی‌شود، متن زرد زیر را بخوانید:</h2>
+    <h2>وضعیت اتصال به سرور ویدیو</h2>
     
-    <video id="myVideo" controls autoplay playsinline>
-        <source src="http://tc10.tdmmov.xyz/movies-tc10/movie/02/No.Strings.Attached.2011.480p.mp4" type="video/mp4">
-        مرورگر شما ویدیو را پشتیبانی نمی‌کند.
-    </video>
+    <div id="status">
+        <p id="msg">در حال تست اتصال...</p>
+        <button onclick="checkVideo()" style="padding: 10px;">تست مجدد دستی</button>
+    </div>
 
-    <div id="log">در حال بررسی وضعیت ویدیو...</div>
+    <video id="testVideo" width="300" style="display:none;"></video>
 
     <script>
-        const video = document.getElementById('myVideo');
-        const log = document.getElementById('log');
+        function checkVideo() {
+            const video = document.getElementById('testVideo');
+            const msg = document.getElementById('msg');
+            const videoUrl = "http://tc10.tdmmov.xyz/movies-tc10/movie/02/No.Strings.Attached.2011.480p.mp4"; // لینک تست گوگل
+            
+            msg.innerHTML = "در حال ارسال درخواست به سرور ویدیو...";
+            
+            video.src = videoUrl;
+            
+            video.oncanplaythrough = function() {
+                msg.innerHTML = "<span class='success'>✅ ارتباط برقرار شد! ویدیو سالم است.</span><br>اگر فیلم نمیبینید، مشکل از تنظیمات Autoplay مرورگر است.";
+            };
 
-        // بررسی خطاهای ویدیو
-        video.onerror = function() {
-            log.innerHTML = "❌ خطا: ویدیو بارگذاری نشد. کد خطا: " + video.error.code;
-            if (video.error.code === 4) {
-                log.innerHTML += "<br>دلیل: لینک ویدیو اشتباه است یا سرور اجازه پخش نمی‌دهد (مشکل HTTP/HTTPS)";
-            }
-        };
-
-        video.oncanplay = function() {
-            log.innerHTML = "✅ ویدیو آماده پخش است. روی دکمه Play کلیک کنید.";
-        };
+            video.onerror = function() {
+                msg.innerHTML = "<span class='error'>❌ خطا در بارگذاری!</span><br>";
+                msg.innerHTML += "کد خطا: " + video.error.code + "<br>";
+                msg.innerHTML += "احتمالاً مرورگر شما اجازه دسترسی به این لینک را نمی‌دهد.";
+            };
+        }
+        
+        // اجرای خودکار بعد از ۲ ثانیه
+        setTimeout(checkVideo, 2000);
     </script>
 </body>
 </html>
