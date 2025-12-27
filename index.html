@@ -1,2 +1,103 @@
-HTML
-<!DOCTYPE html> <html lang="fa" dir="rtl"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>تلویزیون اختصاصی من</title> <style> body { background: #000; color: #fff; margin: 0; font-family: Tahoma, sans-serif; overflow: hidden; } #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; cursor: pointer; } .btn-start { padding: 20px 40px; background: #e50914; color: white; border: none; border-radius: 5px; font-size: 20px; font-weight: bold; cursor: pointer; } #player-container { width: 100vw; height: 100vh; } video { width: 100%; height: 100%; background: #000; } #status-bar { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.5); padding: 10px; font-size: 12px; } </style> </head> <body> <div id="overlay"> <button class="btn-start">🔴 ورود به پخش زنده شبکه</button> <p style="margin-top: 20px;">برای هماهنگی با زمان پخش، کلیک کنید</p> </div> <div id="player-container"> <video id="tvPlayer" controls preload="auto"></video> </div> <div id="status-bar" id="info">در حال بارگذاری...</div> <script> // --- بخش تنظیمات شما --- const playlist = [ { url: 'http://tc6.tdmmov.xyz/movies-tc6/movie/2024/08/Closer.2004.720p.MkvCage.mkv', duration: 6240, title: 'فیلم سینمایی Closer' }, { url: 'لینک_فیلم_دوم_اینجا', duration: 5000, title: 'نام فیلم دوم' } // می‌توانید فیلم‌های بیشتری را اینجا اضافه کنید ]; // تاریخ شروع کل شبکه (این تاریخ را تغییر ندهید تا زمان‌بندی ثابت بماند) const epochStart = new Date('2024-01-01T00:00:00').getTime() / 1000; // ----------------------- const player = document.getElementById('tvPlayer'); const overlay = document.getElementById('overlay'); const info = document.getElementById('status-bar'); function syncStream() { const now = Date.now() / 1000; const totalPlaylistTime = playlist.reduce((acc, movie) => acc + movie.duration, 0); // محاسبه ثانیه فعلی در چرخه کل لیست پخش let elapsedTotal = (now - epochStart) % totalPlaylistTime; let cumulativeTime = 0; for (let movie of playlist) { if (elapsedTotal < cumulativeTime + movie.duration) { const currentSeekTime = elapsedTotal - cumulativeTime; // تغییر فیلم فقط در صورتی که فیلم فعلی نباشد if (player.dataset.currentUrl !== movie.url) { player.src = movie.url; player.dataset.currentUrl = movie.url; player.currentTime = currentSeekTime; } // هماهنگ‌سازی زمان اگر اختلاف زیاد بود (بیش از ۳ ثانیه) if (Math.abs(player.currentTime - currentSeekTime) > 3) { player.currentTime = currentSeekTime; } info.innerText = در حال پخش: ${movie.title} | زمان هماهنگ شده: ${Math.floor(currentSeekTime)} ثانیه; break; } cumulativeTime += movie.duration; } } // شروع پخش با کلیک کاربر overlay.addEventListener('click', () => { overlay.style.display = 'none'; syncStream(); player.play().catch(err => console.error("خطا در پخش:", err)); // چک کردن هماهنگی هر ۵ ثانیه یکبار setInterval(syncStream, 5000); }); // وقتی یک فیلم تمام شد، بلافاصله فیلم بعدی را چک کن player.onended = () => { syncStream(); player.play(); }; </script> </body> </html>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تلویزیون اختصاصی من</title>
+    <style>
+        body { background: #000; color: #fff; margin: 0; font-family: Tahoma, sans-serif; overflow: hidden; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); 
+                   display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; cursor: pointer; }
+        .btn-start { padding: 20px 40px; background: #e50914; color: white; border: none; border-radius: 5px; font-size: 20px; font-weight: bold; cursor: pointer; }
+        #player-container { width: 100vw; height: 100vh; }
+        video { width: 100%; height: 100%; background: #000; }
+        #status-bar { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.5); padding: 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div id="overlay">
+    <button class="btn-start">🔴 ورود به پخش زنده شبکه</button>
+    <p style="margin-top: 20px;">برای هماهنگی با زمان پخش، کلیک کنید</p>
+</div>
+
+<div id="player-container">
+    <video id="tvPlayer" controls preload="auto"></video>
+</div>
+
+<div id="status-bar" id="info">در حال بارگذاری...</div>
+
+<script>
+    // --- بخش تنظیمات شما ---
+    const playlist = [
+        { 
+            url: 'http://tc6.tdmmov.xyz/movies-tc6/movie/2024/08/Closer.2004.720p.MkvCage.mkv', 
+            duration: 6240, 
+            title: 'فیلم سینمایی Closer' 
+        },
+        { 
+            url: 'لینک_فیلم_دوم_اینجا', 
+            duration: 5000, 
+            title: 'نام فیلم دوم' 
+        }
+        // می‌توانید فیلم‌های بیشتری را اینجا اضافه کنید
+    ];
+
+    // تاریخ شروع کل شبکه (این تاریخ را تغییر ندهید تا زمان‌بندی ثابت بماند)
+    const epochStart = new Date('2024-01-01T00:00:00').getTime() / 1000;
+    // -----------------------
+
+    const player = document.getElementById('tvPlayer');
+    const overlay = document.getElementById('overlay');
+    const info = document.getElementById('status-bar');
+
+    function syncStream() {
+        const now = Date.now() / 1000;
+        const totalPlaylistTime = playlist.reduce((acc, movie) => acc + movie.duration, 0);
+        
+        // محاسبه ثانیه فعلی در چرخه کل لیست پخش
+        let elapsedTotal = (now - epochStart) % totalPlaylistTime;
+        
+        let cumulativeTime = 0;
+        for (let movie of playlist) {
+            if (elapsedTotal < cumulativeTime + movie.duration) {
+                const currentSeekTime = elapsedTotal - cumulativeTime;
+                
+                // تغییر فیلم فقط در صورتی که فیلم فعلی نباشد
+                if (player.dataset.currentUrl !== movie.url) {
+                    player.src = movie.url;
+                    player.dataset.currentUrl = movie.url;
+                    player.currentTime = currentSeekTime;
+                }
+
+                // هماهنگ‌سازی زمان اگر اختلاف زیاد بود (بیش از ۳ ثانیه)
+                if (Math.abs(player.currentTime - currentSeekTime) > 3) {
+                    player.currentTime = currentSeekTime;
+                }
+
+                info.innerText = در حال پخش: ${movie.title} | زمان هماهنگ شده: ${Math.floor(currentSeekTime)} ثانیه;
+                break;
+            }
+            cumulativeTime += movie.duration;
+        }
+    }
+
+    // شروع پخش با کلیک کاربر
+    overlay.addEventListener('click', () => {
+        overlay.style.display = 'none';
+        syncStream();
+        player.play().catch(err => console.error("خطا در پخش:", err));
+        
+        // چک کردن هماهنگی هر ۵ ثانیه یکبار
+        setInterval(syncStream, 5000);
+    });
+
+    // وقتی یک فیلم تمام شد، بلافاصله فیلم بعدی را چک کن
+    player.onended = () => {
+        syncStream();
+        player.play();
+    };
+</script>
+
+</body>
+</html>
