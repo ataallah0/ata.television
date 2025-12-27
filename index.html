@@ -1,33 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="fa">
 <head>
     <meta charset="UTF-8">
-    <title>تست نهایی</title>
+    <title>تست پخش زنده</title>
+    <style>
+        body { background: #000; color: #fff; text-align: center; padding-top: 50px; }
+        video { width: 90%; max-width: 800px; border: 2px solid #333; }
+        #log { color: yellow; margin-top: 20px; font-size: 14px; }
+    </style>
 </head>
-<body style="background: black; color: white; text-align: center;">
+<body>
 
-    <h1>در حال تست پخش زنده...</h1>
-    <p>اگر دکمه قرمز را می‌بینید، یعنی سایت سالم است.</p>
+    <h2>اگر ویدیو پخش نمی‌شود، متن زرد زیر را بخوانید:</h2>
     
-    <button id="playBtn" style="padding: 20px; background: red; color: white; border: none; cursor: pointer;">
-        شروع پخش (کلیک کنید)
-    </button>
+    <video id="myVideo" controls autoplay playsinline>
+        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+        مرورگر شما ویدیو را پشتیبانی نمی‌کند.
+    </video>
 
-    <div id="playerArea" style="margin-top: 20px;"></div>
+    <div id="log">در حال بررسی وضعیت ویدیو...</div>
 
     <script>
-        document.getElementById('playBtn').onclick = function() {
-            const videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-            const container = document.getElementById('playerArea');
-            
-            // ساخت پلیر به صورت دستی
-            container.innerHTML = 
-                <video controls autoplay width="100%">
-                    <source src="${videoUrl}" type="video/mp4">
-                    مرورگر شما ویدیو را ساپورت نمی‌کند.
-                </video>
-            ;
-            this.style.display = 'none'; // مخفی کردن دکمه بعد از کلیک
+        const video = document.getElementById('myVideo');
+        const log = document.getElementById('log');
+
+        // بررسی خطاهای ویدیو
+        video.onerror = function() {
+            log.innerHTML = "❌ خطا: ویدیو بارگذاری نشد. کد خطا: " + video.error.code;
+            if (video.error.code === 4) {
+                log.innerHTML += "<br>دلیل: لینک ویدیو اشتباه است یا سرور اجازه پخش نمی‌دهد (مشکل HTTP/HTTPS)";
+            }
+        };
+
+        video.oncanplay = function() {
+            log.innerHTML = "✅ ویدیو آماده پخش است. روی دکمه Play کلیک کنید.";
         };
     </script>
 </body>
