@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تلویزیون آنلاین من</title>
+    <title>تلویزیون آنلاین عطاالله</title>
     <style>
         body { background: #000; color: #fff; margin: 0; font-family: Tahoma, sans-serif; overflow: hidden; text-align: center; }
         #start-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
+            background: rgba(0,0,0,0.95); display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 100;
         }
         .play-btn {
@@ -25,24 +25,31 @@
 <body>
 
     <div id="start-screen">
-        <h1 style="margin-bottom: 30px;">به شبکه تلویزیونی عطاالله  خوش آمدید</h1>
+        <h1 style="margin-bottom: 30px;">به شبکه تلویزیونی عطاالله خوش آمدید</h1>
         <button class="play-btn" onclick="startBroadcast()">🔴 ورود به پخش زنده</button>
         <p style="color: #888; margin-top: 20px;">(برای هماهنگی صدا و تصویر کلیک کنید)</p>
     </div>
 
     <div id="player-container">
-        <video id="tvPlayer" playsinline></video>
+        <video id="tvPlayer" playsinline controls></video>
     </div>
 
-    <div id="info">در حال محاسبه زمان پخش...</div>
+    <div id="info">در حال بارگذاری...</div>
 
     <script>
+        // ۱. در اینجا فیلم‌های جدید را اضافه کنید
         const playlist = [
             { 
                 url: 'https://s3.irdanlod.ir/Animation/2004/T/The.Incredibles.2004.720p.x265.HEVC.Farsi.Dubbed.mkv', 
                 duration: 6400, 
-                title: 'فیلم تستی' 
+                title: 'شگفت‌انگیزان' 
+            },
+            { 
+                url: 'https://cdn2.uptv.ir/?s=11&f=film/Iron_Man_1_2008_1080p_UPTV.co.mkv', 
+                duration: 6400, 
+                title: 'ایرون من '
             }
+            // می‌توانید فیلم‌های بیشتری را با کاما جدا کرده و اینجا اضافه کنید
         ];
 
         const epochStart = new Date('2024-01-01T00:00:00').getTime() / 1000;
@@ -62,10 +69,14 @@
                     
                     if (player.src !== movie.url) {
                         player.src = movie.url;
+                        player.load(); // بارگذاری منبع جدید
                     }
                     
-                    player.currentTime = seekTime;
-                    // اصلاح شده در خط پایین:
+                    // جلوگیری از پرش مداوم تصویر (فقط اگر اختلاف زیاد بود جابجا شود)
+                    if (Math.abs(player.currentTime - seekTime) > 3) {
+                        player.currentTime = seekTime;
+                    }
+                    
                     info.innerText = "در حال پخش: " + movie.title;
                     break;
                 }
@@ -77,12 +88,19 @@
             startScreen.style.display = 'none';
             syncTV();
             player.play().catch(error => {
-                console.error("خطا در پخش:", error);
-                alert("مرورگر اجازه پخش خودکار نداد. دوباره کلیک کنید.");
+                player.muted = true; // اگر خطا داد، بی‌صدا پخش کن تا باز شود
+                player.play();
             });
 
-            setInterval(syncTV, 10000);
+            // هر ۵ ثانیه هماهنگی را چک می‌کند
+            setInterval(syncTV, 5000);
         }
+
+        // وقتی یک فیلم تمام شد، بلافاصله فیلم بعدی را چک کن
+        player.onended = function() {
+            syncTV();
+            player.play();
+        };
     </script>
 </body>
 </html>
