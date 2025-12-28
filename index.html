@@ -37,7 +37,7 @@
     <div id="info">در حال بارگذاری...</div>
 
     <script>
-        // ۱. در اینجا فیلم‌های جدید را اضافه کنید
+        // لیست اصلاح شده با رعایت تمام کاماها و پرانتزها
         const playlist = [
             { 
                 url: 'https://s3.irdanlod.ir/Animation/2004/T/The.Incredibles.2004.720p.x265.HEVC.Farsi.Dubbed.mkv', 
@@ -46,21 +46,19 @@
             },
             { 
                 url: 'https://cdn2.uptv.ir/?s=11&f=film/Iron_Man_1_2008_1080p_UPTV.co.mkv', 
-                duration: 6400, 
-                title: 'ایرون من '
-            }
+                duration: 7560, // ۱۲۶ دقیقه
+                title: 'مرد آهنی ۱' 
+            },
             { 
                 url: 'https://s3.irdanlod.ir/Animation/1995/T/Toy.Story.1995.720p.Farsi.Dubbed.mkv', 
-                duration: 6400, 
-                title: 'اسباب بازی' 
+                duration: 4860, // ۸۱ دقیقه
+                title: 'داستان اسباب‌بازی ۱' 
             },
-            
             { 
                 url: 'https://s3.irdanlod.ir/Animation/1999/T/Toy.Story.2.1999.720p.Farsi.Dubbed.mkv', 
-                duration: 6400, 
-                title: '2اسباب بازی' 
-            },
-            // می‌توانید فیلم‌های بیشتری را با کاما جدا کرده و اینجا اضافه کنید
+                duration: 5520, // ۹۲ دقیقه
+                title: 'داستان اسباب‌بازی ۲' 
+            }
         ];
 
         const epochStart = new Date('2024-01-01T00:00:00').getTime() / 1000;
@@ -80,10 +78,9 @@
                     
                     if (player.src !== movie.url) {
                         player.src = movie.url;
-                        player.load(); // بارگذاری منبع جدید
+                        player.load();
                     }
                     
-                    // جلوگیری از پرش مداوم تصویر (فقط اگر اختلاف زیاد بود جابجا شود)
                     if (Math.abs(player.currentTime - seekTime) > 3) {
                         player.currentTime = seekTime;
                     }
@@ -99,15 +96,15 @@
             startScreen.style.display = 'none';
             syncTV();
             player.play().catch(error => {
-                player.muted = true; // اگر خطا داد، بی‌صدا پخش کن تا باز شود
+                console.error("خطا:", error);
+                player.muted = true;
                 player.play();
             });
 
-            // هر ۵ ثانیه هماهنگی را چک می‌کند
-            setInterval(syncTV, 5000);
+            setInterval(syncTV, 10000);
         }
 
-        // وقتی یک فیلم تمام شد، بلافاصله فیلم بعدی را چک کن
+        // وقتی فیلم تمام شد بلافاصله فیلم بعدی را بیاورد
         player.onended = function() {
             syncTV();
             player.play();
